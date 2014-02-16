@@ -1,0 +1,31 @@
+# author :yufan xue
+# description :read file and calculate by each line
+# data : 02/09/2014 
+# To compile the program use 'make'
+# (Do not type the 'shell$')
+#
+shell$ make
+gcc -o finput -Wall -g -O0 finput.c
+shell$
+
+#
+# To run the program 1
+#
+shell$ ./finput tests/test1.txt
+...
+shell$
+
+#
+# To run the program 2
+#
+shell$ ./calc tests/test1.txt
+...
+shell$
+
+#
+# To cleanup the directory use 'make clean'
+#
+shell$ make clean
+rm -f finput
+rm -f -rf *.o *.dSYM
+shell$

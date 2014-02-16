@@ -1,0 +1,5 @@
+/bin/date
+/bin/pwd
+/bin/ls assign1 assign2 ..
+/bin/pwd ; /bin/ls ..
+/bin/sleep 5 & /bin/sleep 3 &
