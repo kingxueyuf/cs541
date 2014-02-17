@@ -1,0 +1,13 @@
+123
+
+adfdsfsaf
+
+/bin/ls assign1 assign2 ..
+/bin/pwd ; /bin/ls ..
+/bin/sleep 5 & /bin/sleep 3 &
+
+/date & jobs & test 1 2 3
+
+jobs
+
+exit

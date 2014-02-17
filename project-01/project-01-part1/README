@@ -1,0 +1,87 @@
+# author :yufan xue
+# description : project-01-part1
+# data : 02/16/2014 
+# To compile the program use 'make'
+# (Do not type the 'shell$')
+#
+shell$ make
+gcc -c -o support.o support.c -Wall -g
+gcc -o myshell myshell.c support.o -Wall -g
+shell$
+
+#
+# To run the myshell in interactive mode
+#
+shell$ ./myshell
+...
+shell$
+
+#
+# To run the myshell in batch mode
+#
+shell$ ./myshell file.txt
+...
+shell$
+
+#
+# To cleanup the directory use 'make clean'
+#
+shell$ make clean
+rm -f myshell *.o
+rm -f -rf *.dSYM
+shell$
+
+#
+# test cases
+# run myshell in interactive mode
+#
+[kingxueyuf@robin-xue project-01-part1]$ ./myshell 
+$myshell date
+Job 1 : "date"
+$myshell /bin/pwd
+Job 2 : "/bin/pwd"
+$myshell ls assign1 ..
+Job 3 : "ls" [assign1] [..]
+$myshell 
+$myshell /bin/date ; /bin/pwd ; /bin/ls assign1 ..
+Job 4 : "/bin/date"
+Job 5 : "/bin/pwd"
+Job 6 : "/bin/ls" [assign1] [..]
+$myshell /bin/sleep 5 & /bin/sleep 4 &
+Job 7*: "/bin/sleep" [5]
+Job 8*: "/bin/sleep" [4]
+$myshell jobs
+Job 9^: "jobs"
+$myshell history
+Job 10^: "history"
+$myshell exit
+Job 11^: "exit"
+Total number of jobs: 8 
+Total number of jobs in history: 11 
+Total number of jobs in background: 2 
+
+
+#
+# run myshell in batch mode
+#
+[kingxueyuf@robin-xue project-01-part1]$ ./myshell file.txt 
+Processing File: file.txt
+Job 1 : "/bin/date"
+Job 2 : "/bin/pwd"
+Job 3 : "/bin/ls" [assign1] [assign2] [..]
+Job 4 : "/bin/pwd"
+Job 5 : "/bin/ls" [..]
+Job 6*: "/bin/sleep" [5]
+Job 7*: "/bin/sleep" [3]
+
+Total number of jobs: 7 
+Total number of jobs in history: 7 
+Total number of jobs in background: 2 
+
+#
+# bugs
+# when user run myshell in interactive mode
+# user input :  space
+# error : segment fault
+# I haven't solve this problem yet
+#
