@@ -1,0 +1,20 @@
+/bin/date
+/bin/pwd
+/bin/ls assign1 assign2 ..
+/bin/pwd ; /bin/ls ..
+/bin/sleep 5 & /bin/sleep 3 &
+/bin/sleep 3 & /bin/sleep 10 & /bin/sleep 5 &
+jobs
+jobs
+history
+/bin/pwd ; /bin/ls ..
+/bin/pwd ;
+/bin/pwd ; /bin/pwd
+jobs
+jobs
+jobs
+/bin/date
+/bin/pwd
+/bin/ls
+/bin/date ; /bin/sleep 5 ;
+exit

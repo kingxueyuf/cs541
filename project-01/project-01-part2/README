@@ -1,0 +1,116 @@
+# author :yufan xue
+# description : project-01-part2
+# data : 02/23/2014 
+# To compile the program use 'make'
+# (Do not type the 'shell$')
+#
+shell$ make
+gcc -c -o support.o support.c -Wall -g
+gcc -o myshell myshell.c support.o -Wall -g
+shell$
+
+#
+# To run the myshell in interactive mode
+#
+shell$ ./myshell
+...
+shell$
+
+#
+# To run the myshell in batch mode
+#
+shell$ ./myshell file.txt
+...
+shell$
+
+#
+# To cleanup the directory use 'make clean'
+#
+shell$ make clean
+rm -f myshell *.o
+rm -f -rf *.dSYM
+shell$
+
+#
+# test cases
+# run myshell in interactive mode
+#
+[kingxueyuf@robin-xue project-01-part1]$ ./myshell 
+myshell$ date
+Sun Feb 23 16:36:34 CST 2014
+myshell$ /bin/pwd
+/Users/yufanxue/Documents/cs541/project-01/project-01-part2
+myshell$ ls .. 	
+project-01-part1	project-01-part2
+myshell$ /bin/date ; /bin/pwd; /bin/ls ...
+Sun Feb 23 16:36:57 CST 2014
+/Users/yufanxue/Documents/cs541/project-01/project-01-part2
+ls: ...: No such file or directory
+myshell$ /bin/sleep 5 & /bin/sleep 4 & /bin/sleep 3 &
+myshell$ jobs
+[ 6]	Running 	/bin/sleep
+[ 7]	Running 	/bin/sleep
+[ 8]	Running 	/bin/sleep
+myshell$ jobs
+[ 6]	Done    	/bin/sleep
+[ 7]	Done    	/bin/sleep
+[ 8]	Done    	/bin/sleep
+myshell$ exit
+-------------------------------
+Total number of jobs               = 9
+Total number of jobs in history    = 12
+Total number of jobs in background = 3
+
+#
+# run myshell in batch mode
+#
+[kingxueyuf@robin-xue project-01-part1]$ ./myshell file.txt 
+Sun Feb 23 16:37:59 CST 2014
+/Users/yufanxue/Documents/cs541/project-01/project-01-part2
+ls: assign1: No such file or directory
+ls: assign2: No such file or directory
+..:
+project-01-part1	project-01-part2
+/Users/yufanxue/Documents/cs541/project-01/project-01-part2
+project-01-part1	project-01-part2
+[ 5]	Running 	/bin/sleep
+[ 6]	Running 	/bin/sleep
+[ 7]	Running 	/bin/sleep
+[ 8]	Running 	/bin/sleep
+[ 9]	Running 	/bin/sleep
+[ 5]	Running 	/bin/sleep
+[ 6]	Running 	/bin/sleep
+[ 7]	Running 	/bin/sleep
+[ 8]	Running 	/bin/sleep
+[ 9]	Running 	/bin/sleep
+[ 5]	Running 	/bin/sleep
+[ 6]	Running 	/bin/sleep
+[ 7]	Running 	/bin/sleep
+[ 8]	Running 	/bin/sleep
+[ 9]	Running 	/bin/sleep
+[ 5]	Running 	/bin/sleep
+[ 6]	Running 	/bin/sleep
+[ 7]	Running 	/bin/sleep
+[ 8]	Running 	/bin/sleep
+[ 9]	Running 	/bin/sleep
+[ 5]	Running 	/bin/sleep
+[ 6]	Running 	/bin/sleep
+[ 7]	Running 	/bin/sleep
+[ 8]	Running 	/bin/sleep
+[ 9]	Running 	/bin/sleep
+Job 15^: "history"
+/Users/yufanxue/Documents/cs541/project-01/project-01-part2
+project-01-part1	project-01-part2
+/Users/yufanxue/Documents/cs541/project-01/project-01-part2
+/Users/yufanxue/Documents/cs541/project-01/project-01-part2
+/Users/yufanxue/Documents/cs541/project-01/project-01-part2
+Waiting on  5 jobs to finish running in the background!
+-------------------------------
+Total number of jobs               = 15
+Total number of jobs in history    = 21
+Total number of jobs in background = 5
+
+#
+# bugs
+# no bugs :)
+#
