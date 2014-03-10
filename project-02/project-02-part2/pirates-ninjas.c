@@ -167,7 +167,8 @@ int main(int argc, char * argv[]) {
             exit(-1);
         }
     }
-    /*
+    printf("-------------------------\n");
+    /*      
      * Output enter & left
      */
     for(int i = 0 ; i < pirates_number ; i++)
