@@ -23,13 +23,16 @@ semaphore_t mutex_department;
 semaphore_t mutex_team;
 
 /*
- *
+ * Time to run for the whole code
  */
 int time_to_run;
+/*
+ * Start time
+ */
 double tstart;
 
 /*
- *
+ * Int array to record enter & left situation for each thread
  */
 int* pirate_enter;
 int* pirate_left;
@@ -40,9 +43,9 @@ int main(int argc, char * argv[]) {
     int ret;
     /*
      * Initialize:
-     * - 
-     * - 
-     * - 
+     * - pirates_number from command line
+     * - ninjas_number from command line
+     * - time_to_run from command line
      */
     srandom(time(NULL));
 
@@ -146,7 +149,7 @@ int main(int argc, char * argv[]) {
     /*
      * Join Thread(s)
      */
-     /* Join producer thread */
+     /* Join pirates thread */
     for(int i = 0; i < pirates_number; ++i ) {
         ret = pthread_join(pirates_threads[i], NULL);
         if( 0 != ret ) {
@@ -154,7 +157,7 @@ int main(int argc, char * argv[]) {
             exit(-1);
         }
     }
-    /* Join consumer thread */
+    /* Join ninjas thread */
     for(int i = 0; i < ninjas_number; ++i ) {
         ret = pthread_join(ninjas_threads[i], NULL);
         if( 0 != ret ) {
@@ -203,6 +206,10 @@ int main(int argc, char * argv[]) {
     return 0;
 }
 
+/*
+ * Pirate thread run this function
+ * To find pseudo code and design detail, please see REAMME.pdf
+ */
 void *pirate(void *threadid)
 {
     int ret;
@@ -214,16 +221,15 @@ void *pirate(void *threadid)
         tstop = (double)clock()/CLOCKS_PER_SEC;
         ttime= tstop-tstart;
         ttime = ttime * 10;
-        // printf("Time = %f",ttime);
+        /*
+         * If time reached, exit
+         */
         if(ttime > time_to_run)
         {
            pthread_exit(NULL);
         }
         printf("Pirate      %d | Waiting \n",tid);
-        /*
-         * Critical Section to update buffer
-         */
-         /*  Wait the semaphore mutex  */
+
         if( 0 != (ret = semaphore_wait(&mutex_register)) ) {
             fprintf(stderr, "Error: semaphore_wait() failed with %d in thread %d\n", ret, tid);
             pthread_exit(NULL);
@@ -242,13 +248,14 @@ void *pirate(void *threadid)
                 pthread_exit(NULL);
             }
         }
-
+        /* Wait mutex_pirate_count */
         if( 0 != (ret = semaphore_post(&mutex_pirate_count)) ) {
             fprintf(stderr, "Error: semaphore_post() failed with %d in thread %d\n", ret, tid);
             pthread_exit(NULL);
         }
 
-        if( 0 != (ret = semaphore_post(&mutex_register)) ) {
+        /* Wait mutex_pirate_count */
+        if( 0 != (ret = semaphore_post(&mutex_pirate_count)) ) {
             fprintf(stderr, "Error: semaphore_post() failed with %d in thread %d\n", ret, tid);
             pthread_exit(NULL);
         }
@@ -261,13 +268,15 @@ void *pirate(void *threadid)
         pirate_enter[tid]++;
         printf("Pirate      %d | Costume preparation\n",tid);
         int random_num = random() % 5000;
-        // printf("I sleep %d",random_num);
         usleep(random_num);
 
+        /* Post team */
         if( 0 != (ret = semaphore_post(&mutex_team)) ) {
             fprintf(stderr, "Error: semaphore_post() failed with %d in thread %d\n", ret, tid);
             pthread_exit(NULL);
         }
+
+        /* Post mutex_pirate_count */
         if( 0 != (ret = semaphore_wait(&mutex_pirate_count)) ) {
             fprintf(stderr, "Error: semaphore_wait() failed with %d in thread %d\n", ret, tid);
             pthread_exit(NULL);
@@ -277,17 +286,18 @@ void *pirate(void *threadid)
         printf("Pirate      %d | Leaving \n",tid);
         if(pirate_count == 0)
         {
+            /* Post mutex_department */
             if( 0 != (ret = semaphore_post(&mutex_department)) ) {
                 fprintf(stderr, "Error: semaphore_post() failed with %d in thread %d\n", ret, tid);
                 pthread_exit(NULL);
             } 
         }
+        /* Post mutex_pirate_count */
         if( 0 != (ret = semaphore_post(&mutex_pirate_count)) ) {
             fprintf(stderr, "Error: semaphore_post() failed with %d in thread %d\n", ret, tid);
             pthread_exit(NULL);
         }
         random_num = random() % 1000;
-        // printf("I sleep %d",random_num);
         usleep(random_num);
     }    
 }
