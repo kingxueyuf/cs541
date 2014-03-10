@@ -8,33 +8,36 @@
 #include "pirates-ninjas.h"
 
 /*
- * 
- */
-semaphore_t *pirate_queue_semaphore;
-semaphore_t *ninja_queue_semaphore;
-
-/*
  *
  */
-char * queue[];
-
-/*
- *
- */
-int currrent_pirates_number = 0;
-int currrent_ninjas_number = 0;
+int ninja_count = 0;
+int pirate_count = 0;
 
 /*
  * Semaphore(s)
  */
-semaphore_t department;
-semaphore_t team;
-semaphore_t mutex;
+semaphore_t mutex_register;
+semaphore_t mutex_ninja_count;
+semaphore_t mutex_pirate_count;
+semaphore_t mutex_department;
+semaphore_t mutex_team;
 
+/*
+ *
+ */
+int time_to_run;
+double tstart;
+
+/*
+ *
+ */
+int* pirate_enter;
+int* pirate_left;
+int* ninja_enter;
+int* ninja_left;
 
 int main(int argc, char * argv[]) {
     int ret;
-    int stderr;
     /*
      * Initialize:
      * - 
@@ -50,59 +53,59 @@ int main(int argc, char * argv[]) {
     int ninjas_number = 0;
     
     /*  Time to run in seconds */
-    int time_to_run = 0;
+    time_to_run = 0;
 
     int valid = check_command_line(argc,argv,&pirates_number,&ninjas_number,&time_to_run);
+
+    printf("Time to Live (seconds)  : %d \n",time_to_run);
+    printf("Number of Pirates       : %d \n",pirates_number);
+    printf("Number of Ninjas        : %d \n",ninjas_number);
+    printf("-------------------------------\n");
 
     pthread_t pirates_threads[pirates_number];
 
     pthread_t ninjas_threads[ninjas_number];
 
     if(valid)
-    {   
-    
+    {
         /*
          * Initialize:
-         * - 
-         * - 
-         * - 
-         * - 
+         * - semaphore_t mutex_register = 1;
+         * - semaphore_t mutex_ninja_count = 1;
+         * - semaphore_t mutex_pirate_count = 1;
+         * - semaphore_t mutex_department = 1;
+         * - semaphore_t mutex_team = 2;
          */
-
-        if( 0 != (ret = semaphore_create(&department, 1)) ) {
+        if( 0 != (ret = semaphore_create(&mutex_register, 1)) ) {
             fprintf(stderr, "Error: semaphore_create() failed with %d\n", ret);
             return -1;
         }
-        if( 0 != (ret = semaphore_create(&team, 2)) ) {
+        if( 0 != (ret = semaphore_create(&mutex_ninja_count, 1)) ) {
             fprintf(stderr, "Error: semaphore_create() failed with %d\n", ret);
             return -1;
         }
-        if( 0 != (ret = semaphore_create(&mutex, 1)) ) {
+        if( 0 != (ret = semaphore_create(&mutex_pirate_count, 1)) ) {
             fprintf(stderr, "Error: semaphore_create() failed with %d\n", ret);
             return -1;
         }
-
-        pirate_queue_semaphore = (semaphore_t**)malloc(sizeof(semaphore_t*)* (time_to_run*5));
-        for(int i = 0 ; i < time_to_run* 5 ; i++)
-        {
-            if( 0 != (ret = semaphore_create(pirate_queue_semaphore[i], 0)) ) {
-                fprintf(stderr, "Error: semaphore_create() failed with %d\n", ret);
-                return -1;
-            }
+        if( 0 != (ret = semaphore_create(&mutex_department, 1)) ) {
+            fprintf(stderr, "Error: semaphore_create() failed with %d\n", ret);
+            return -1;
         }
-
-        ninja_queue_semaphore = (semaphore_t**)malloc(sizeof(semaphore_t*)* (time_to_run*5));
-        for(int i = 0 ; i < time_to_run* 5 ; i++)
-        {
-            if( 0 != (ret = semaphore_create(ninja_queue_semaphore[i], 0)) ) {
-                fprintf(stderr, "Error: semaphore_create() failed with %d\n", ret);
-                return -1;
-            }
+        if( 0 != (ret = semaphore_create(&mutex_team, 2)) ) {
+            fprintf(stderr, "Error: semaphore_create() failed with %d\n", ret);
+            return -1;
         }
-
-        queue = (char**)malloc(sizeof(char*) * 1);
-
-
+        /*
+         * int* pirate_enter;
+         * int* pirate_left;
+         * int* ninja_enter;
+         * int* ninja_left;
+         */
+        pirate_enter = (int *)malloc(sizeof(int) * pirates_number);
+        pirate_left = (int *)malloc(sizeof(int) * pirates_number);
+        ninja_enter = (int *)malloc(sizeof(int) * ninjas_number);
+        ninja_left = (int *)malloc(sizeof(int) *ninjas_number);
         /*
          * Create threads
          */
@@ -133,6 +136,7 @@ int main(int argc, char * argv[]) {
                 exit(-1);
             }
         }
+        tstart = (double)clock()/CLOCKS_PER_SEC;
 
     }else{
         printf("Error: valid input command line\n");
@@ -158,15 +162,38 @@ int main(int argc, char * argv[]) {
             exit(-1);
         }
     }
+    /*
+     * Output enter & left
+     */
+    for(int i = 0 ; i < pirates_number ; i++)
+    {
+        printf("Pirate %d : Entered     %d / Left   %d\n",i,pirate_enter[i],pirate_left[i]);
+    }
+    for(int i = 0 ; i < ninjas_number ; i++)
+    {
+        printf("Ninja  %d : Entered     %d / Left   %d\n",i,ninja_enter[i],ninja_left[i]);
+    }
 
     /*
      * Cleanup
      */
-    if( 0 != (ret = semaphore_destroy(&department)) ) {
+    if( 0 != (ret = semaphore_destroy(&mutex_register)) ) {
         fprintf(stderr, "Error: semaphore_destroy() failed with %d\n", ret);
         return -1;
     }
-    if( 0 != (ret = semaphore_destroy(&team)) ) {
+    if( 0 != (ret = semaphore_destroy(&mutex_department)) ) {
+        fprintf(stderr, "Error: semaphore_destroy() failed with %d\n", ret);
+        return -1;
+    }
+    if( 0 != (ret = semaphore_destroy(&mutex_team)) ) {
+        fprintf(stderr, "Error: semaphore_destroy() failed with %d\n", ret);
+        return -1;
+    }
+    if( 0 != (ret = semaphore_destroy(&mutex_ninja_count)) ) {
+        fprintf(stderr, "Error: semaphore_destroy() failed with %d\n", ret);
+        return -1;
+    }
+    if( 0 != (ret = semaphore_destroy(&mutex_pirate_count)) ) {
         fprintf(stderr, "Error: semaphore_destroy() failed with %d\n", ret);
         return -1;
     }
@@ -180,233 +207,177 @@ void *pirate(void *threadid)
 {
     int ret;
     int tid = (intptr_t)threadid;
+    double tstop;
+    double ttime;
     while(1)
     {
+        tstop = (double)clock()/CLOCKS_PER_SEC;
+        ttime= tstop-tstart;
+        ttime = ttime * 10;
+        // printf("Time = %f",ttime);
+        if(ttime > time_to_run)
+        {
+           pthread_exit(NULL);
+        }
         printf("Pirate      %d | Waiting \n",tid);
         /*
          * Critical Section to update buffer
          */
          /*  Wait the semaphore mutex  */
-        if( 0 != (ret = semaphore_wait(&mutex)) ) {
+        if( 0 != (ret = semaphore_wait(&mutex_register)) ) {
             fprintf(stderr, "Error: semaphore_wait() failed with %d in thread %d\n", ret, tid);
             pthread_exit(NULL);
         }
+        if( 0 != (ret = semaphore_wait(&mutex_pirate_count)) ) {
+            fprintf(stderr, "Error: semaphore_wait() failed with %d in thread %d\n", ret, tid);
+            pthread_exit(NULL);
+        }
+        /* Add one pirate */
+        pirate_count++;
+        if(pirate_count ==1)
+        {
+            /* Wait department */
+            if( 0 != (ret = semaphore_wait(&mutex_department)) ) {
+                fprintf(stderr, "Error: semaphore_wait() failed with %d in thread %d\n", ret, tid);
+                pthread_exit(NULL);
+            }
+        }
 
-        currrent_pirates_number++;
-
-        int queue_size = sizeof(queue)/sizeof(queue[0]);
-
-        queue = realloc( (queue_size+1)*sizeof(char*) );
-
-        queue[queue_size-1] = malloc(sizeof(char) * 1);
-        
-        *queue[queue_size-1] = 'p';
-
-        if( 0 != (ret = semaphore_post(pirate_queue_semaphore[queue_size-1])) ) {
+        if( 0 != (ret = semaphore_post(&mutex_pirate_count)) ) {
             fprintf(stderr, "Error: semaphore_post() failed with %d in thread %d\n", ret, tid);
             pthread_exit(NULL);
         }
 
-        if( 0 != (ret = semaphore_post(&mutex)) ) {
+        if( 0 != (ret = semaphore_post(&mutex_register)) ) {
             fprintf(stderr, "Error: semaphore_post() failed with %d in thread %d\n", ret, tid);
             pthread_exit(NULL);
         }
 
-        if(queue_size-1==0)
+        /* Wait team */
+        if( 0 != (ret = semaphore_wait(&mutex_team)) ) {
+            fprintf(stderr, "Error: semaphore_wait() failed with %d in thread %d\n", ret, tid);
+            pthread_exit(NULL);
+        }
+        pirate_enter[tid]++;
+        printf("Pirate      %d | Costume preparation\n",tid);
+        int random_num = random() % 5000;
+        // printf("I sleep %d",random_num);
+        usleep(random_num);
+
+        if( 0 != (ret = semaphore_post(&mutex_team)) ) {
+            fprintf(stderr, "Error: semaphore_post() failed with %d in thread %d\n", ret, tid);
+            pthread_exit(NULL);
+        }
+        if( 0 != (ret = semaphore_wait(&mutex_pirate_count)) ) {
+            fprintf(stderr, "Error: semaphore_wait() failed with %d in thread %d\n", ret, tid);
+            pthread_exit(NULL);
+        }
+        pirate_left[tid]++;
+        pirate_count--;
+        printf("Pirate      %d | Leaving \n",tid);
+        if(pirate_count == 0)
         {
-            if( 0 != (ret = semaphore_wait(&department)) ) {
-                fprintf(stderr, "Error: semaphore_wait() failed with %d in thread %d\n", ret, tid);
-                pthread_exit(NULL);
-            }
-            if( 0 != (ret = semaphore_wait(&team)) ) {
-                fprintf(stderr, "Error: semaphore_wait() failed with %d in thread %d\n", ret, tid);
-                pthread_exit(NULL);
-            }
-
-            printf("Pirate      %d | Costume preparation\n",tid);
-
-
-            if( 0 != (ret = semaphore_post(&team)) ) {
+            if( 0 != (ret = semaphore_post(&mutex_department)) ) {
                 fprintf(stderr, "Error: semaphore_post() failed with %d in thread %d\n", ret, tid);
                 pthread_exit(NULL);
-            }
-
-        }else
-        {
-            if(queue[queue_size-2] =='p')
-            {
-                /* last one is pirate */
-                if( 0 != (ret = semaphore_wait(pirate_queue_semaphore[queue_size-2])) ) {
-                    fprintf(stderr, "Error: semaphore_post() failed with %d in thread %d\n", ret, tid);
-                    pthread_exit(NULL);
-                }
-                if( 0 != (ret = semaphore_wait(&team)) ) {
-                    fprintf(stderr, "Error: semaphorew_wait() failed with %d in thread %d\n", ret, tid);
-                    pthread_exit(NULL);
-                }
-
-                printf("Pirate      %d | Costume preparation\n",tid);
-                int random_num = random() % 5000;
-                usleep(random_num);
-
-                if( 0 != (ret = semaphore_post(&team)) ) {
-                    fprintf(stderr, "Error: semaphore_post() failed with %d in thread %d\n", ret, tid);
-                    pthread_exit(NULL);
-                }
-            }else if( queue[queue_size-2] == 'q')
-            {
-                if( 0 != (ret = semaphore_wait(&department)) ) {
-                    fprintf(stderr, "Error: semaphore_wait() failed with %d in thread %d\n", ret, tid);
-                    pthread_exit(NULL);
-                }
-
-                if( 0 != (ret = semaphore_wait(&team)) ) {
-                    fprintf(stderr, "Error: semaphore_wait() failed with %d in thread %d\n", ret, tid);
-                    pthread_exit(NULL);
-                }
-
-                printf("Pirate      %d | Costume preparation\n",tid);
-                int random_num = random() % 5000;
-                usleep(random_num);
-
-                if( 0 != (ret = semaphore_post(&team)) ) {
-                    fprintf(stderr, "Error: semaphore_post() failed with %d in thread %d\n", ret, tid);
-                    pthread_exit(NULL);
-                }
-            }
+            } 
         }
-        currrent_pirates_number--;
-        if(currrent_pirates_number ==0)
-        {
-            if( 0 != (ret = semaphore_post(&department)) ) {
-                fprintf(stderr, "Error: semaphore_post() failed with %d in thread %d\n", ret, tid);
-                pthread_exit(NULL);
-            }
+        if( 0 != (ret = semaphore_post(&mutex_pirate_count)) ) {
+            fprintf(stderr, "Error: semaphore_post() failed with %d in thread %d\n", ret, tid);
+            pthread_exit(NULL);
         }
-
-        printf("Pirate      %d | Leaving\n",tid);
-        /* Just to simulate some work, so we can see the threads synchronize */
-        int random_num = random() % 1000;
+        random_num = random() % 1000;
+        // printf("I sleep %d",random_num);
         usleep(random_num);
     }    
-    pthread_exit(NULL);
 }
 
 void *ninja(void *threadid)
 {
     int ret;
     int tid = (intptr_t)threadid;
+    double ttime;
+    double tstop;
     while(1)
-    {
+    {   
+        tstop = (double)clock()/CLOCKS_PER_SEC;
+        ttime= tstop-tstart;
+        ttime = ttime * 10;
+        // printf("Time = %f",ttime);
+        if(ttime > time_to_run)
+        {
+           pthread_exit(NULL);
+        }
         printf("Ninja       %d | Waiting \n",tid);
         /*
          * Critical Section to update buffer
          */
          /*  Wait the semaphore mutex  */
-        if( 0 != (ret = semaphore_wait(&mutex)) ) {
+        if( 0 != (ret = semaphore_wait(&mutex_register)) ) {
             fprintf(stderr, "Error: semaphore_wait() failed with %d in thread %d\n", ret, tid);
             pthread_exit(NULL);
         }
+        if( 0 != (ret = semaphore_wait(&mutex_ninja_count)) ) {
+            fprintf(stderr, "Error: semaphore_wait() failed with %d in thread %d\n", ret, tid);
+            pthread_exit(NULL);
+        }
+        /* Add one pirate */
+        ninja_count++;
+        if(ninja_count ==1)
+        {
+            /* Wait department */
+            if( 0 != (ret = semaphore_wait(&mutex_department)) ) {
+                fprintf(stderr, "Error: semaphore_wait() failed with %d in thread %d\n", ret, tid);
+                pthread_exit(NULL);
+            }
+        }
 
-        currrent_ninjas_number++;
-
-        int queue_size = sizeof(queue)/sizeof(queue[0]);
-
-        queue = realloc( (queue_size+1)*sizeof(char*) );
-
-        queue[queue_size-1] = malloc(sizeof(char) * 1);
-        
-        *queue[queue_size-1] = 'p';
-
-        if( 0 != (ret = semaphore_post(ninja_queue_semaphore[queue_size-1])) ) {
+        if( 0 != (ret = semaphore_post(&mutex_ninja_count)) ) {
             fprintf(stderr, "Error: semaphore_post() failed with %d in thread %d\n", ret, tid);
             pthread_exit(NULL);
         }
 
-        if( 0 != (ret = semaphore_post(&mutex)) ) {
+        if( 0 != (ret = semaphore_post(&mutex_register)) ) {
             fprintf(stderr, "Error: semaphore_post() failed with %d in thread %d\n", ret, tid);
             pthread_exit(NULL);
         }
 
-        if(queue_size-1==0)
-        {
-            if( 0 != (ret = semaphore_wait(&department)) ) {
-                fprintf(stderr, "Error: semaphore_wait() failed with %d in thread %d\n", ret, tid);
-                pthread_exit(NULL);
-            }
-            if( 0 != (ret = semaphore_wait(&team)) ) {
-                fprintf(stderr, "Error: semaphore_wait() failed with %d in thread %d\n", ret, tid);
-                pthread_exit(NULL);
-            }
-
-            printf("Ninja       %d | Costume preparation\n",tid);
-
-
-            if( 0 != (ret = semaphore_post(&team)) ) {
-                fprintf(stderr, "Error: semaphore_post() failed with %d in thread %d\n", ret, tid);
-                pthread_exit(NULL);
-            }
-
-        }else
-        {
-            if(queue[queue_size-2] =='p')
-            {
-                /* last one is pirate */
-                if( 0 != (ret = semaphore_wait(ninja_queue_semaphore[queue_size-2])) ) {
-                    fprintf(stderr, "Error: semaphore_post() failed with %d in thread %d\n", ret, tid);
-                    pthread_exit(NULL);
-                }
-                if( 0 != (ret = semaphore_wait(&team)) ) {
-                    fprintf(stderr, "Error: semaphorew_wait() failed with %d in thread %d\n", ret, tid);
-                    pthread_exit(NULL);
-                }
-
-                printf("Ninja       %d | Costume preparation\n",tid);
-                int random_num = random() % 5000;
-                usleep(random_num);
-
-                if( 0 != (ret = semaphore_post(&team)) ) {
-                    fprintf(stderr, "Error: semaphore_post() failed with %d in thread %d\n", ret, tid);
-                    pthread_exit(NULL);
-                }
-            }else if( queue[queue_size-2] == 'q')
-            {
-                if( 0 != (ret = semaphore_wait(&department)) ) {
-                    fprintf(stderr, "Error: semaphore_wait() failed with %d in thread %d\n", ret, tid);
-                    pthread_exit(NULL);
-                }
-
-                if( 0 != (ret = semaphore_wait(&team)) ) {
-                    fprintf(stderr, "Error: semaphore_wait() failed with %d in thread %d\n", ret, tid);
-                    pthread_exit(NULL);
-                }
-
-                printf("Ninja       %d | Costume preparation\n",tid);
-                int random_num = random() % 5000;
-                usleep(random_num);
-
-                if( 0 != (ret = semaphore_post(&team)) ) {
-                    fprintf(stderr, "Error: semaphore_post() failed with %d in thread %d\n", ret, tid);
-                    pthread_exit(NULL);
-                }
-            }
+        /* Wait team */
+        if( 0 != (ret = semaphore_wait(&mutex_team)) ) {
+            fprintf(stderr, "Error: semaphore_wait() failed with %d in thread %d\n", ret, tid);
+            pthread_exit(NULL);
         }
-        currrent_ninjas_number--;
-        if(currrent_pirates_number ==0)
-        {
-            if( 0 != (ret = semaphore_post(&department)) ) {
-                fprintf(stderr, "Error: semaphore_post() failed with %d in thread %d\n", ret, tid);
-                pthread_exit(NULL);
-            }
-        }
-
-        printf("Pirate      %d | Leaving\n",tid);
-        /* Just to simulate some work, so we can see the threads synchronize */
-        int random_num = random() % 1000;
+        ninja_enter[tid]++;
+        printf("Ninja       %d | Costume preparation\n",tid);
+        int random_num = random() % 5000;
         usleep(random_num);
-    }    
-    pthread_exit(NULL);
 
+        if( 0 != (ret = semaphore_post(&mutex_team)) ) {
+            fprintf(stderr, "Error: semaphore_post() failed with %d in thread %d\n", ret, tid);
+            pthread_exit(NULL);
+        }
+        if( 0 != (ret = semaphore_wait(&mutex_ninja_count)) ) {
+            fprintf(stderr, "Error: semaphore_wait() failed with %d in thread %d\n", ret, tid);
+            pthread_exit(NULL);
+        }
+        ninja_left[tid]++;
+        ninja_count--;
+        printf("Ninja       %d | Leaving \n",tid);
+        if(ninja_count == 0)
+        {
+            if( 0 != (ret = semaphore_post(&mutex_department)) ) {
+                fprintf(stderr, "Error: semaphore_post() failed with %d in thread %d\n", ret, tid);
+                pthread_exit(NULL);
+            } 
+        }
+        if( 0 != (ret = semaphore_post(&mutex_ninja_count)) ) {
+            fprintf(stderr, "Error: semaphore_post() failed with %d in thread %d\n", ret, tid);
+            pthread_exit(NULL);
+        }
+        random_num = random() % 1000;
+        // printf("I sleep %d",random_num);
+        usleep(random_num);
+    }
 }
 
 int check_command_line(int argc, char * argv[], int *pirates_number, int* ninjas_number, int* time_to_run)
@@ -499,18 +470,18 @@ int is_valid_int(char* str){
     return 1;
 }
 
-void output_buffer()
-{
-    printf("[");
-    for(int i = 0 ; i <buffer_size ; i++)
-    {
-        printf("    %d",buffer[i]);
-        if(i == in)
-            printf("^");
-        if(i == out)
-            printf("v");
-    }
-    printf("    ]\n");
-}
+// void output_buffer()
+// {
+//     printf("[");
+//     for(int i = 0 ; i <buffer_size ; i++)
+//     {
+//         printf("    %d",buffer[i]);
+//         if(i == in)
+//             printf("^");
+//         if(i == out)
+//             printf("v");
+//     }
+//     printf("    ]\n");
+// }
 
 

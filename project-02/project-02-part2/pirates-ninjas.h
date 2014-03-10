@@ -12,6 +12,7 @@
 #include <errno.h>
 #include <pthread.h>
 #include <ctype.h>	//For isdigit
+#include <time.h>	//For count time
 #include "semaphore_support.h"
 
 /*****************************
@@ -23,19 +24,20 @@
 /*****************************
  * Function Declarations
  *****************************/
+
 /*
- * Thread Start Function
- * Add a segment of numbers in the buffer
- * Store the result in the segment of 'subtotals' for this thread.
- *  *threadid : integer artificial thread ID
+ *
  */
-void *add_numbers(void *threadid);
+void *pirate(void *threadid);
+
+void *ninja(void *threadid);
+
 
 
 /*
  * Check whether the input is valid
  */
-int check_command_line(int argc, char * argv[], int *producer_number, int* consumer_number, int* buffer_size, int* time_to_live);
+int check_command_line(int argc, char * argv[], int *pirates_number, int* ninjas_number, int* time_to_run);
 
 
 /*
@@ -43,19 +45,4 @@ int check_command_line(int argc, char * argv[], int *producer_number, int* consu
  */
 
 int is_valid_int(char* str);
-
-/*
- *
- */
-void *consume(void *threadid);
-
-/*
- *
- */
-void *produce(void *threadid);
-
-/*
- *
- */
-void output_buffer();
 
