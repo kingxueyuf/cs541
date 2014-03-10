@@ -8,13 +8,15 @@
 #include "pirates-ninjas.h"
 
 /*
- *
+ * Count current there is how many ninja occupying the costume department
+ * Count pirate there is how many pirate occupying the costume department
  */
 int ninja_count = 0;
 int pirate_count = 0;
 
 /*
  * Semaphore(s)
+ * See README.pdf to find design detail
  */
 semaphore_t mutex_register;
 semaphore_t mutex_ninja_count;
@@ -230,10 +232,13 @@ void *pirate(void *threadid)
         }
         printf("Pirate      %d | Waiting \n",tid);
 
+        /* Wait mutex_register */
         if( 0 != (ret = semaphore_wait(&mutex_register)) ) {
             fprintf(stderr, "Error: semaphore_wait() failed with %d in thread %d\n", ret, tid);
             pthread_exit(NULL);
         }
+
+        /* Wait mutex_pirate_count */
         if( 0 != (ret = semaphore_wait(&mutex_pirate_count)) ) {
             fprintf(stderr, "Error: semaphore_wait() failed with %d in thread %d\n", ret, tid);
             pthread_exit(NULL);
@@ -248,14 +253,14 @@ void *pirate(void *threadid)
                 pthread_exit(NULL);
             }
         }
-        /* Wait mutex_pirate_count */
+        /* Post mutex_pirate_count */
         if( 0 != (ret = semaphore_post(&mutex_pirate_count)) ) {
             fprintf(stderr, "Error: semaphore_post() failed with %d in thread %d\n", ret, tid);
             pthread_exit(NULL);
         }
 
-        /* Wait mutex_pirate_count */
-        if( 0 != (ret = semaphore_post(&mutex_pirate_count)) ) {
+        /* Post mutex_register */
+        if( 0 != (ret = semaphore_post(&mutex_register)) ) {
             fprintf(stderr, "Error: semaphore_post() failed with %d in thread %d\n", ret, tid);
             pthread_exit(NULL);
         }
@@ -276,7 +281,7 @@ void *pirate(void *threadid)
             pthread_exit(NULL);
         }
 
-        /* Post mutex_pirate_count */
+        /* wait mutex_pirate_count */
         if( 0 != (ret = semaphore_wait(&mutex_pirate_count)) ) {
             fprintf(stderr, "Error: semaphore_wait() failed with %d in thread %d\n", ret, tid);
             pthread_exit(NULL);
@@ -302,6 +307,10 @@ void *pirate(void *threadid)
     }    
 }
 
+/*
+ * Ninja thread run this function
+ * To find pseudo code and design detail, please see REAMME.pdf
+ */
 void *ninja(void *threadid)
 {
     int ret;
@@ -319,14 +328,13 @@ void *ninja(void *threadid)
            pthread_exit(NULL);
         }
         printf("Ninja       %d | Waiting \n",tid);
-        /*
-         * Critical Section to update buffer
-         */
-         /*  Wait the semaphore mutex  */
+
+        /*  Wait the mutex_register  */
         if( 0 != (ret = semaphore_wait(&mutex_register)) ) {
             fprintf(stderr, "Error: semaphore_wait() failed with %d in thread %d\n", ret, tid);
             pthread_exit(NULL);
         }
+        /*  Wait the mutex_ninja_count  */
         if( 0 != (ret = semaphore_wait(&mutex_ninja_count)) ) {
             fprintf(stderr, "Error: semaphore_wait() failed with %d in thread %d\n", ret, tid);
             pthread_exit(NULL);
@@ -341,12 +349,14 @@ void *ninja(void *threadid)
                 pthread_exit(NULL);
             }
         }
-
+    
+        /* Post mutex_ninja_count */
         if( 0 != (ret = semaphore_post(&mutex_ninja_count)) ) {
             fprintf(stderr, "Error: semaphore_post() failed with %d in thread %d\n", ret, tid);
             pthread_exit(NULL);
         }
-
+        
+        /* Post mutex_register */
         if( 0 != (ret = semaphore_post(&mutex_register)) ) {
             fprintf(stderr, "Error: semaphore_post() failed with %d in thread %d\n", ret, tid);
             pthread_exit(NULL);
@@ -362,10 +372,12 @@ void *ninja(void *threadid)
         int random_num = random() % 5000;
         usleep(random_num);
 
+        /* Post mutex_team */
         if( 0 != (ret = semaphore_post(&mutex_team)) ) {
             fprintf(stderr, "Error: semaphore_post() failed with %d in thread %d\n", ret, tid);
             pthread_exit(NULL);
         }
+        /* Wait mutex_ninja_count */
         if( 0 != (ret = semaphore_wait(&mutex_ninja_count)) ) {
             fprintf(stderr, "Error: semaphore_wait() failed with %d in thread %d\n", ret, tid);
             pthread_exit(NULL);
@@ -375,11 +387,13 @@ void *ninja(void *threadid)
         printf("Ninja       %d | Leaving \n",tid);
         if(ninja_count == 0)
         {
+            /* Post mutex_department */
             if( 0 != (ret = semaphore_post(&mutex_department)) ) {
                 fprintf(stderr, "Error: semaphore_post() failed with %d in thread %d\n", ret, tid);
                 pthread_exit(NULL);
             } 
         }
+        /* Post mutex_ninja_count */
         if( 0 != (ret = semaphore_post(&mutex_ninja_count)) ) {
             fprintf(stderr, "Error: semaphore_post() failed with %d in thread %d\n", ret, tid);
             pthread_exit(NULL);
@@ -390,9 +404,14 @@ void *ninja(void *threadid)
     }
 }
 
+/*
+ * Check command input 
+ * Return 1 -> true
+ *        0 -> false
+ */
+
 int check_command_line(int argc, char * argv[], int *pirates_number, int* ninjas_number, int* time_to_run)
 {
-
     switch(argc)
     {
         case 2:
@@ -457,6 +476,11 @@ int check_command_line(int argc, char * argv[], int *pirates_number, int* ninjas
 }
 
 
+/* 
+ * Check whether the string is a valid int
+ * Return 1 -> true
+ *        2 -> false
+ */
 int is_valid_int(char* str){
     //TODO
     int start = 0;

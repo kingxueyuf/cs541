@@ -26,23 +26,25 @@
  *****************************/
 
 /*
- *
+ * Pirate thread run this function
+ * To find pseudo code and design detail, please see REAMME.pdf
  */
 void *pirate(void *threadid);
-
-void *ninja(void *threadid);
-
-
-
 /*
- * Check whether the input is valid
+ * Ninja thread run this function
+ * To find pseudo code and design detail, please see REAMME.pdf
+ */
+void *ninja(void *threadid);
+/*
+ * Check command input 
+ * Return 1 -> true
+ *        0 -> false
  */
 int check_command_line(int argc, char * argv[], int *pirates_number, int* ninjas_number, int* time_to_run);
-
-
-/*
- * Check whether the string is an valid integer
+/* 
+ * Check whether the string is a valid int
+ * Return 1 -> true
+ *        2 -> false
  */
-
 int is_valid_int(char* str);
 
