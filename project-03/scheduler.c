@@ -28,7 +28,6 @@ int main(int argc, char **argv) {
  * It will 1) check the command line
  * then run the schedule algorithm based on the commond line input parameters
  */
-
 int program(int argc,char **argv)
 {
 	// 1 --> ture 0 --> false
@@ -504,7 +503,7 @@ void common_time_echo()
 }
 
 /* 
- * Judge wheter the string is a valid int
+ * Judge whether the string is a valid int
  */
 int is_valid_int(char* str){
 	//TODO
@@ -529,6 +528,10 @@ int is_valid_int(char* str){
 	return 1;
 }
 
+/*
+ * Tool function
+ * split one string based on delimiter
+ */
 char** str_split(char* a_str, const char a_delim)
 {
     char** result    = 0;
@@ -576,7 +579,9 @@ char** str_split(char* a_str, const char a_delim)
 
     return result;
 }
-
+/*
+ * Free the memory malloced before
+ */
 void free_memory()
 {	
 	int i = 0;
