@@ -14,12 +14,20 @@ int LINELEN = 256;
 process** process_arr; // pointer to an process* array
 int process_num= 0;
 
+/*
+ */
 int main(int argc, char **argv) {
 
     program(argc,argv);
 
     return 0;
 }
+
+/*
+ * program function 
+ * It will 1) check the command line
+ * then run the schedule algorithm based on the commond line input parameters
+ */
 
 int program(int argc,char **argv)
 {
@@ -34,6 +42,15 @@ int program(int argc,char **argv)
 	return 0;
 }
 
+/*
+ * parse_command function
+ * Parse the command 
+ * The command input parameters include
+ * 1)filename
+ * 2)which scheduling algorithm to use
+ * 3)quantum
+ * Attention --> the command is not ordered !!!
+ */
 int parse_command(int argc,char **argv)
 {
 	int i = 1;
@@ -100,6 +117,15 @@ int parse_command(int argc,char **argv)
 	}
 }
 
+/*
+ * schedule function
+ * After parse command program will run the schedule function
+ * There exists 4 scheduling algorithm
+ * 1) FCFS
+ * 2) SJF
+ * 3) Priority
+ * 4) RR
+ */
 void schedule(){
 	int valid = process_file(filename);
 	if(!valid)
@@ -135,6 +161,11 @@ void schedule(){
 }
 
 
+/*
+ * process_file
+ * Process the file 
+ * Build the struct to store the process information
+ */
 int process_file(char *filename) {
     char buffer[LINELEN];
     char *fgets_rtn = NULL;
@@ -200,6 +231,10 @@ int process_file(char *filename) {
     return 0;
 }
 
+/*
+ * FCFS function
+ * First-Come, First-Served scheduling algorithm
+ */
 void FCFS()
 {
 	/*
@@ -224,6 +259,10 @@ void FCFS()
 	 */
 }
 
+/*
+ * SJF function
+ * Shortest-Job First scheduling algorithm
+ */
 void SJF()
 {
 	/*
@@ -288,7 +327,9 @@ void SJF()
 	 */	
 }
 
-
+/*
+ * Priority function
+ */
 void Priority()
 {
 	/*
@@ -353,6 +394,10 @@ void Priority()
 	 */
 }
 
+/*
+ * RR function
+ * Round-Robin
+ */
 void RR()
 {
 	int array[process_num];
@@ -369,7 +414,7 @@ void RR()
 		if(array[i] != 0)
 		{
 			if( i == 0 && array[i] == process_arr[i]->cpu_burst_time - quantum )
-				process_arr[i]->waiting_time = time_use;
+				process_arr[i]->waiting_time = time_use - quantum;
 
 			if( array[i] == process_arr[i]->cpu_burst_time)
 			{
@@ -395,6 +440,9 @@ void RR()
 	}
 }
 
+/*
+ * 
+ */
 void commmon_info_echo()
 {
 	if(quantum == -1)
