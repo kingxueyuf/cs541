@@ -405,6 +405,12 @@ void RR()
 	{
 		array[i] = process_arr[i]->cpu_burst_time;
 	}
+	int array_last[process_num];
+	i = 0;
+	for( ; i < process_num ; i++)
+	{
+		array_last[i] = 0;
+	}
 	int time_use = 0;
 	int finished_process_num = 0;
 	i = 0;
@@ -412,8 +418,8 @@ void RR()
 	{
 		if(array[i] != 0)
 		{
-			if( i == 0 && array[i] == process_arr[i]->cpu_burst_time - quantum )
-				process_arr[i]->waiting_time = time_use - quantum;
+			// if( i == 0 && array[i] == process_arr[i]->cpu_burst_time - quantum )
+			// 	process_arr[i]->waiting_time = time_use - quantum;
 
 			if( array[i] == process_arr[i]->cpu_burst_time)
 			{
@@ -421,13 +427,21 @@ void RR()
 			}
 			if( quantum < array[i])
 			{	
+				if(array[i] != process_arr[i]->cpu_burst_time)
+					process_arr[i]->waiting_time += time_use - array_last[i];
 				// sleep(quantum);
 				time_use += quantum;
 				array[i] = array[i] - quantum;
+				array_last[i] = time_use;
 			}else
 			{
+				if(process_arr[i]->cpu_burst_time > quantum)
+				{
+					process_arr[i]->waiting_time += time_use - array_last[i];
+				}
 				// sleep(array[i]);
 				time_use += array[i];
+				array_last[i] = time_use;
 				process_arr[i]->turnaround_time = time_use;
 				array[i] = 0;
 				finished_process_num ++;
