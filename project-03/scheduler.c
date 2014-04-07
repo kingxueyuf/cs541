@@ -73,7 +73,7 @@ int parse_command(int argc,char **argv)
 				}else if( is_valid_int(argv[i]) ){
 					int convert_int = strtol(argv[i],NULL,10);
 					if( convert_int >= 1 && convert_int <= 4){
-						printf("%d\n", convert_int);
+						// printf("%d\n", convert_int);
 						command_type = convert_int;
 					}else{
 						printf("valid int but range overflow");
@@ -200,26 +200,26 @@ int process_file(char *filename) {
         	process* current_process = (process*)malloc( sizeof(process) );
         	process_arr[ rownum - 1] =  current_process;
 			char** tokens;
-			printf("split=[%s]\n\n", buffer);
+			// printf("split=[%s]\n\n", buffer);
 			tokens = str_split(buffer, ' ');
 			if (tokens)
 			{
-			    printf("pid=[%s]\n", *(tokens + 0));
+			    // printf("pid=[%s]\n", *(tokens + 0));
 			   	int pid = strtol(*(tokens + 0),NULL,10);
 			   	current_process->pid = pid;
 			    free(*(tokens + 0));
 
-			    printf("cpu burst time =[%s]\n", *(tokens + 1));
+			    // printf("cpu burst time =[%s]\n", *(tokens + 1));
 			   	int cpu_time = strtol(*(tokens + 1),NULL,10);
 			   	current_process->cpu_burst_time = cpu_time;
 			    free(*(tokens + 1));
 
-			    printf("priority =[%s]\n", *(tokens + 2));
+			    // printf("priority =[%s]\n", *(tokens + 2));
 			   	int priority = strtol(*(tokens + 2),NULL,10);
 			   	current_process->priority = priority;
 			    free(*(tokens + 2));
 
-			    printf("\n");
+			    // printf("\n");
 			    free(tokens);
 			}
     	}
@@ -228,7 +228,7 @@ int process_file(char *filename) {
 
     // TODO: Close the file
     fclose(fd);
-    return 0;
+    return 1;
 }
 
 /*
@@ -396,7 +396,7 @@ void Priority()
 
 /*
  * RR function
- * Round-Robin
+ * Round-Robin scheduling algorithm
  */
 void RR()
 {
@@ -441,7 +441,8 @@ void RR()
 }
 
 /*
- * 
+ * Print the information of each process before run the 
+ * scheduling algorithm
  */
 void commmon_info_echo()
 {
@@ -471,6 +472,9 @@ void commmon_info_echo()
 	printf("-------------------------------\n");
 }
 
+/*
+ * Calculate the time after run the schedulding algorithm
+ */
 void common_time_echo()
 {
 	/*
@@ -499,6 +503,9 @@ void common_time_echo()
 	 printf("-------------------------------\n");
 }
 
+/* 
+ * Judge wheter the string is a valid int
+ */
 int is_valid_int(char* str){
 	//TODO
 	int start = 0;
