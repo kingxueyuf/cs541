@@ -523,7 +523,12 @@ char** str_split(char* a_str, const char a_delim)
 }
 
 void free_memory()
-{
-
+{	
+	int i = 0;
+	for( ; i < process_num ; i++)
+	{
+		free(process_arr[i]);
+	}
+	free(process_arr);
 }
 
