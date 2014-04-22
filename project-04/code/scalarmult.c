@@ -31,11 +31,14 @@ int main(int argc, char * argv[]) {
 	    	// Clear/Initalize the matrix
 	    	clear_matrix(matrix, i);
 
-	    	double FLOPS_1 = run_experiment_ij(matrix,2,i);
+	    	srand(time(NULL));
+			int r = rand();
+
+	    	double FLOPS_1 = run_experiment_ij(matrix,r,i);
 
 	    	clear_matrix(matrix, i);
 
-	    	double FLOPS_2 = run_experiment_ji(matrix,2,i);
+	    	double FLOPS_2 = run_experiment_ji(matrix,r,i);
 
 	    	int matrix_bytes = sizeof(mtype_t) * i * i;
 
